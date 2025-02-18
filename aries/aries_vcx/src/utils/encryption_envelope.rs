@@ -48,9 +48,15 @@ impl EncryptionEnvelope {
             .iter()
             .map(|routing_key| Key::from_base58(routing_key, KeyType::Ed25519))
             .collect::<Result<Vec<_>, _>>()?;
-        let sender_key = sender_vk
-            .map(|key| Key::from_base58(key, KeyType::Ed25519))
+        info!("sender_vk: {:?}", sender_vk);
+        let sender = sender_vk.unwrap_or("No sender key found!");
+        let send = sender.strip_prefix("did:key:");
+        let sender_key = send
+            .map(|_s| Key::from_fingerprint(send.unwrap()))
             .transpose()?;
+        info!("sender_key: {:?}", sender_key);
+        info!("recipient_key: {:?}", recipient_key);
+        info!("routing_keys: {:?}", routing_keys);
         Self::create_from_keys(wallet, data, sender_key, recipient_key, routing_keys).await
     }
 
@@ -118,6 +124,9 @@ impl EncryptionEnvelope {
             recipient_key.validate_key_type(KeyType::Ed25519)?.clone(),
         )
         .await?;
+        info!("message: {:?}", message);
+        info!("recipient_key: {:?}", recipient_key);
+        info!("routing_keys: {:?}", routing_keys);
         EncryptionEnvelope::wrap_into_forward_messages(wallet, message, recipient_key, routing_keys)
             .await
             .map(EncryptionEnvelope)

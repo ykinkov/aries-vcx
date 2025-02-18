@@ -45,7 +45,7 @@ async fn main() {
 }
 
 fn setup_logging() {
-    let env = env_logger::Env::default().default_filter_or("info");
+    let env = env_logger::Env::default().default_filter_or("trace");
     env_logger::init_from_env(env);
 }
 

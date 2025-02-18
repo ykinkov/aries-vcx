@@ -3,6 +3,7 @@ use aries_askar::{
     kms::{KeyAlg, LocalKey},
 };
 use async_trait::async_trait;
+use log::info;
 use public_key::Key;
 
 use super::{
@@ -133,12 +134,21 @@ impl DidWallet for AskarWallet {
     }
 
     async fn sign(&self, key: &Key, msg: &[u8]) -> VcxWalletResult<Vec<u8>> {
+        info!("key in signing: {}", key.base58());
+        info!("key in signing finger: {}", key.fingerprint());
+        info!("key : {}", key);
         let Some(key) = self
             .session()
             .await?
             .fetch_key(&key.base58(), false)
             .await?
         else {
+            info!("Key not found: {}", key.base58());
+            let e = VcxWalletError::record_not_found_from_details(
+                RecordCategory::Key,
+                &key.base58(),
+            );
+            info!("err: {}", e);
             return Err(VcxWalletError::record_not_found_from_details(
                 RecordCategory::Key,
                 &key.base58(),

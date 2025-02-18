@@ -28,8 +28,9 @@ async fn get_signature_data(
     let mut sig_data = now.to_be_bytes().to_vec();
     sig_data.extend(data.as_bytes());
 
+    let key1 = key.strip_prefix("did:key:").unwrap_or(key);
     let signature = wallet
-        .sign(&Key::from_base58(key, KeyType::Ed25519)?, &sig_data)
+        .sign(&Key::from_fingerprint(key1)?, &sig_data)
         .await?;
 
     Ok((signature, sig_data))
@@ -46,7 +47,13 @@ pub async fn sign_connection_response(
     let sig_data = URL_SAFE_LENIENT.encode(sig_data);
     let signature = URL_SAFE_LENIENT.encode(signature);
 
-    let connection_sig = ConnectionSignature::new(signature, sig_data, key.to_string());
+    // pass base58 key to ConnectionSignature formatted as did:key:base58 - is it needed?
+    let stripped_key = key.strip_prefix("did:key:").unwrap_or(key);
+    let key = Key::from_fingerprint(stripped_key)?;
+    let signer_b58 = key.base58();
+    let signer = format!("did:key:{}", signer_b58);
+
+    let connection_sig = ConnectionSignature::new(signature, sig_data, signer);
 
     Ok(connection_sig)
 }

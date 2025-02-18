@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use shared::misc::utils::CowStr;
 use typed_builder::TypedBuilder;
-
 use crate::{
     decorators::{please_ack::PleaseAck, thread::Thread, timing::Timing},
     msg_parts::MsgParts,

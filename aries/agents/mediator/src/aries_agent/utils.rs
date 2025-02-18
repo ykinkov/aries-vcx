@@ -3,6 +3,7 @@ use aries_vcx::{
 };
 use aries_vcx_wallet::wallet::base_wallet::BaseWallet;
 use axum::async_trait;
+use log::info;
 use diddoc_legacy::aries::diddoc::AriesDidDoc;
 use messages::{
     decorators::thread::Thread,
@@ -24,6 +25,9 @@ pub async fn build_response_content(
     new_service_endpoint: url::Url,
     new_routing_keys: Vec<String>,
 ) -> VcxResult<Response> {
+    info!("OLD REC VK: {:?}", old_recipient_vk);
+    info!("NEW REC VK: {:?}", new_recipient_vk);
+
     let mut did_doc = AriesDidDoc::default();
     let did = new_recipient_did.clone();
 

@@ -4,6 +4,7 @@ use aries_askar::{
     Session, Store,
 };
 use async_trait::async_trait;
+use log::info;
 use public_key::Key;
 
 use self::{askar_utils::local_key_to_bs58_public_key, askar_wallet_config::AskarWalletConfig};
@@ -144,6 +145,7 @@ impl AskarWallet {
     ) -> VcxWalletResult<(String, LocalKey)> {
         let key = LocalKey::from_secret_bytes(alg, seed)?;
         let key_name = local_key_to_bs58_public_key(&key)?.into_inner();
+        info!("inserting key: {}", key_name);
         session
             .insert_key(&key_name, &key, None, None, None)
             .await?;

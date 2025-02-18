@@ -11,7 +11,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-
+use messages::AriesMessage;
 use crate::{
     aries_agent::{Agent, ArcAgent},
     didcomm_handlers,
@@ -29,7 +29,8 @@ pub async fn oob_invite_json(
     State(agent): State<ArcAgent<impl BaseWallet, impl MediatorPersistence>>,
 ) -> Json<Value> {
     let oob = agent.get_oob_invite().unwrap();
-    Json(serde_json::to_value(oob).unwrap())
+    let msg = AriesMessage::from(oob);
+    Json(serde_json::to_value(msg).unwrap())
 }
 
 pub async fn handle_didcomm(
