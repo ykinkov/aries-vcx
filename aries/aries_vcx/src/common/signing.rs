@@ -51,9 +51,8 @@ pub async fn sign_connection_response(
     let stripped_key = key.strip_prefix("did:key:").unwrap_or(key);
     let key = Key::from_fingerprint(stripped_key)?;
     let signer_b58 = key.base58();
-    let signer = format!("did:key:{}", signer_b58);
 
-    let connection_sig = ConnectionSignature::new(signature, sig_data, signer);
+    let connection_sig = ConnectionSignature::new(signature, sig_data, signer_b58);
 
     Ok(connection_sig)
 }
