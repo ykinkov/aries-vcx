@@ -7,6 +7,7 @@ use async_trait::async_trait;
 /// Database backend is used for default implementation of MediatorPersistence trait
 pub use database::get_db_pool as get_persistence;
 use diddoc_legacy::aries::diddoc::AriesDidDoc;
+use errors::RemoveMessagesError;
 
 use self::errors::{
     AddRecipientError, CreateAccountError, GetAccountDetailsError, GetAccountIdError,
@@ -63,6 +64,8 @@ pub trait MediatorPersistence: Send + Sync + 'static {
         &self,
         auth_pubkey: &str,
     ) -> Result<AccountDetails, GetAccountDetailsError>;
+
+    async fn remove_messages(&self, message_ids: Vec<String>) -> Result<(), RemoveMessagesError>;
 }
 
 #[derive(Debug)]
