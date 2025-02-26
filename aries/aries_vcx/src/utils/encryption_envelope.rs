@@ -15,6 +15,8 @@ use crate::{
     },
 };
 
+const DID_KEY_PREFIX: &str = "did:key:";
+
 #[derive(Debug)]
 pub struct EncryptionEnvelope(pub Vec<u8>);
 
@@ -48,15 +50,19 @@ impl EncryptionEnvelope {
             .iter()
             .map(|routing_key| Key::from_base58(routing_key, KeyType::Ed25519))
             .collect::<Result<Vec<_>, _>>()?;
-        info!("sender_vk: {:?}", sender_vk);
-        let sender = sender_vk.unwrap_or("No sender key found!");
-        let send = sender.strip_prefix("did:key:");
-        let sender_key = send
-            .map(|_s| Key::from_fingerprint(send.unwrap()))
-            .transpose()?;
-        info!("sender_key: {:?}", sender_key);
-        info!("recipient_key: {:?}", recipient_key);
-        info!("routing_keys: {:?}", routing_keys);
+
+        let sender_key =  if sender_vk.unwrap().starts_with(DID_KEY_PREFIX) {
+            let sender = sender_vk.unwrap_or("No sender key found!");
+            let send = sender.strip_prefix(DID_KEY_PREFIX);
+            send
+                .map(|_s| Key::from_fingerprint(send.unwrap()))
+                .transpose()?
+        } else {
+            sender_vk
+                .map(|key| Key::from_base58(key, KeyType::Ed25519))
+                .transpose()?
+        };
+
         Self::create_from_keys(wallet, data, sender_key, recipient_key, routing_keys).await
     }
 
