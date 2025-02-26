@@ -17,6 +17,9 @@ use connection::handle_aries_connection;
 use forward::handle_routing_forward;
 use mediator_coord::handle_mediation_coord;
 use pickup::handle_pickup_protocol;
+use aries_vcx::protocols::trustping::build_ping_response;
+use messages::msg_fields::protocols::trust_ping::TrustPing;
+
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -58,6 +61,10 @@ pub async fn handle_aries<T: BaseWallet, P: MediatorPersistence>(
                     )
                     .await?;
                     AriesMessage::Pickup(pickup_response)
+                }
+                GeneralAriesMessage::AriesVCXSupported(AriesMessage::TrustPing(TrustPing::Ping(trust_ping))) => {
+                    let ping_response = build_ping_response(&trust_ping);
+                    AriesMessage::TrustPing(TrustPing::PingResponse(ping_response))
                 }
                 GeneralAriesMessage::AriesVCXSupported(AriesMessage::CoordinateMediation(
                     coord_message,
