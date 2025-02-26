@@ -5,7 +5,7 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use diddoc_legacy::aries::diddoc::AriesDidDoc;
 use futures::TryStreamExt;
-use log::info;
+use log::{debug, info};
 use sqlx::{
     mysql::{MySqlPoolOptions, MySqlRow},
     MySqlPool, Row,
@@ -308,16 +308,18 @@ impl MediatorPersistence for sqlx::MySqlPool {
                 info!("Found enough messages {:#?}", limit);
                 break;
             }
-
-            let message_ids: Vec<String> = messages.iter().map(|(id, _)| id.clone()).collect();
-
-            //TODO: implement message states - pending and sent and make delete with a config flag
-            self.remove_messages(message_ids).await.map_err(|e| {
-                RetrievePendingMessagesError::StorageBackendError(StorageBackendError {
-                    source: e.into(),
-                })
-            })?;
         }
+
+        debug!("before all messages");
+        let message_ids: Vec<String> = messages.iter().map(|(id, _)| id.clone()).collect();
+        debug!("all message ids {:?}", message_ids);
+        //TODO: implement message states - pending and sent and make delete with a config flag
+        self.remove_messages(message_ids).await.map_err(|e| {
+            RetrievePendingMessagesError::StorageBackendError(StorageBackendError {
+                source: e.into(),
+            })
+        })?;
+
         info!(
             "Found total of {:#?} messages, returning them",
             messages.len()
@@ -326,7 +328,7 @@ impl MediatorPersistence for sqlx::MySqlPool {
     }
 
     async fn remove_messages(&self, message_ids: Vec<String>) -> Result<(), RemoveMessagesError> {
-        info!("Removing messages with ids {:#?}", message_ids);
+        debug!("Removing messages with ids {:#?}", message_ids);
         let query = format!(
             "DELETE FROM messages WHERE message_id IN ({})",
             message_ids
