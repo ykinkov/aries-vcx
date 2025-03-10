@@ -9,6 +9,8 @@ use axum::{
     routing::get,
     Json, Router,
 };
+use tower_http::limit::RequestBodyLimitLayer;
+use axum::extract::DefaultBodyLimit;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use messages::AriesMessage;
@@ -65,7 +67,7 @@ pub async fn build_router(
     Router::default()
         .route("/", get(readme))
         .route("/invitation", get(oob_invite_json))
-        .route("/didcomm", get(handle_didcomm).post(handle_didcomm))
+        .route("/didcomm", get(handle_didcomm).post(handle_didcomm)).layer(DefaultBodyLimit::disable()).layer(RequestBodyLimitLayer::new(20 * 1000 * 1000))
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
         .with_state(Arc::new(agent))
 }
